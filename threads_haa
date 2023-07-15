@@ -1,10 +1,25 @@
 from typing import Final
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-
+import requests
 TOKEN: Final = '6119100110:AAH4NeeiD9RTTuyh32v33DuMIHnvep63OPE'
 BOT_USERNAME: Final = '@ThreadsHaabOT'
 
+#Tweet_scrape
+
+def tweet_scrape(link):
+  url = "https://twitter135.p.rapidapi.com/v2/Tweet/"
+
+  querystring = link
+
+  headers = {
+  	"X-RapidAPI-Key": "48e63a2553mshdecfd29b244b388p123f6fjsnb5d883ec1c98",
+  	"X-RapidAPI-Host": "twitter135.p.rapidapi.com"
+  }
+
+  response = requests.get(url, headers=headers, params=querystring)
+
+  print(response.json())
 
 # Commands
 async def add_thread_command(update: Update,
@@ -40,6 +55,19 @@ def handle_response(text: str) -> str:
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   message_type: str = update.message.chat.type
   text: str = update.message.text
+  tweet_link : str = ''
+  tweet_detail = {"id":""}
+  if 'twitter.com' in text :
+    tweet_link = text
+    tweet_info = tweet_link.split("/")
+    user_id = tweet_info[3] # account_name
+    tweet_id = tweet_info[5] # tweet_id
+    if '?' in tweet_id:
+      tweet_id = tweet_id.split('?')[0]
+    tweet_detail["id"]=tweet_id
+    tweet_scrape(tweet_detail)
+    
+    
 
   print(f'User ({update.message.chat.id}) in {message_type}: "{text}"')
 
@@ -76,3 +104,4 @@ if __name__ == '__main__':
   print('Polling...')
   # Run the bot
   app.run_polling(poll_interval=1)
+
