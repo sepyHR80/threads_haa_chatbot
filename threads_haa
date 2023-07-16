@@ -1,12 +1,21 @@
+import telegram
 from typing import Final
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import requests
 TOKEN: Final = '6119100110:AAH4NeeiD9RTTuyh32v33DuMIHnvep63OPE'
 BOT_USERNAME: Final = '@ThreadsHaabOT'
+Admin_User_id : Final = 81183343
 
+#Hanle tweet text and username and etc
+def tweet_handler(tweet_json,tweet_url):
+  tweet_text = tweet_json["text"]
+  tweet_user_name = tweet_json["user"]["name"]
+  tweet_prc_message= tweet_text+'\n\n'+'🎙 - '+f'<a href="{tweet_url}">{tweet_user_name}</a>'+' -'+'\n'+'📣 - @threads_haa'
+  return tweet_prc_message
+  
 #Tweet_scrape
-
 def tweet_scrape(link):
   url = "https://twitter135.p.rapidapi.com/v2/Tweet/"
 
@@ -19,7 +28,7 @@ def tweet_scrape(link):
 
   response = requests.get(url, headers=headers, params=querystring)
 
-  print(response.json())
+  return response.json()
 
 # Commands
 async def add_thread_command(update: Update,
@@ -32,8 +41,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # Response
-
-
 def handle_response(text: str) -> str:
   processed: str = text.lower()
 
@@ -53,21 +60,23 @@ def handle_response(text: str) -> str:
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  message_type: str = update.message.chat.type
+  message_type: str = update.message.chat.type 
   text: str = update.message.text
   tweet_link : str = ''
+  
   tweet_detail = {"id":""}
+
+  #Hanle twitter messages
   if 'twitter.com' in text :
     tweet_link = text
     tweet_info = tweet_link.split("/")
-    user_id = tweet_info[3] # account_name
+    
     tweet_id = tweet_info[5] # tweet_id
     if '?' in tweet_id:
       tweet_id = tweet_id.split('?')[0]
+      
     tweet_detail["id"]=tweet_id
-    tweet_scrape(tweet_detail)
-    
-    
+    final_format =tweet_handler(tweet_scrape(tweet_detail),tweet_link)  
 
   print(f'User ({update.message.chat.id}) in {message_type}: "{text}"')
 
@@ -83,6 +92,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   print('Bot', response)
   await update.message.reply_text(response)
 
+  #print our requested answer
+  if update.message.chat.id != Admin_User_id:
+    
+    bot = telegram.Bot(token=TOKEN)
+    await bot.send_message(chat_id=Admin_User_id, text=final_format, parse_mode=ParseMode.HTML, disable_web_page_preview=True) 
+
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
   print(f'Update {update} caused error {context.error}')
@@ -90,7 +105,6 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
   app = Application.builder().token(TOKEN).build()
-
   # Commands
   app.add_handler(CommandHandler('start', start_command))
   app.add_handler(CommandHandler('add_thread', add_thread_command))
@@ -105,3 +119,4 @@ if __name__ == '__main__':
   # Run the bot
   app.run_polling(poll_interval=1)
 
+  
