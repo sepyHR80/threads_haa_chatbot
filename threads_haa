@@ -4,9 +4,9 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import requests
-TOKEN: Final = '6119100110:AAH4NeeiD9RTTuyh32v33DuMIHnvep63OPE'
+TOKEN: Final = ''
 BOT_USERNAME: Final = '@ThreadsHaabOT'
-Admin_User_id : Final = 81183343
+Admin_User_id : Final = ''
 
 #Hanle tweet text and username and etc
 def tweet_handler(tweet_json,tweet_url):
